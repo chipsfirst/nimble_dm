@@ -453,7 +453,8 @@ button.stat:hover { border-color: rgba(224, 164, 95, .45); background: var(--amb
 .hp-quick .hp-btns { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .btn-green { background: rgba(147, 177, 115, .12); border-color: rgba(147, 177, 115, .35); color: #c9e0ac; }
 .btn-green:hover { background: rgba(147, 177, 115, .22); color: #e0f0c6; }
-.actions-pips { display: flex; gap: 3px; }
+.actions-pips { display: flex; gap: 3px; align-items: center; }
+.actions-pips .acts-label { margin-right: 2px; }
 .apip { width: 16px; height: 8px; border-radius: 3px; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); }
 .apip.on { background: var(--amber); border-color: #b8813f; }
 

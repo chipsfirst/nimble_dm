@@ -89,11 +89,12 @@ function combatRow(c, idx) {
       </div>
     </div>
     <div class="cside">
-      <div class="row" style="gap:4px;justify-content:flex-end">
+      <div class="row" style="gap:4px;justify-content:flex-end;flex-wrap:wrap">
         <div class="actions-pips" title="Действия в этом ходу">
+          <span class="small dim nowrap acts-label">Действия:</span>
           ${Array.from({ length: c.maxActions || 3 }, (_, i) => `<button class="apip ${i < (c.actions ?? 3) ? "on" : ""}" type="button" data-act="combat-action" data-id="${c.id}" data-i="${i}" aria-label="Действие ${i + 1}"></button>`).join("")}
         </div>
-        <button class="btn btn-sm ${c.reaction ? "btn-danger" : ""}" type="button" data-act="combat-reaction" data-id="${c.id}" title="Реакция стоит 1 действие, 1 раз за раунд">${c.reaction ? "✓ Реакция" : "Реакция (−1 действие)"}</button>
+        <button class="btn btn-sm ${c.reaction ? "btn-danger" : ""}" type="button" data-act="combat-reaction" data-id="${c.id}" title="Реакция — одно действие, но не чаще 1 раза за раунд">${c.reaction ? "✓ Реакция (1/раунд)" : "Реакция (1/раунд)"}</button>
       </div>
       <div class="hp-quick">
         <span class="small dim nowrap">Урон / лечение:</span>
