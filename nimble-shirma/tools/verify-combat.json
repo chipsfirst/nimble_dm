@@ -4,5 +4,6 @@
   { "type": "fill", "selector": "#refSearch", "value": "Тролль" },
   { "type": "click", "selector": ".ref-row" },
   { "type": "click", "selector": "[data-act='ref-monster']" },
-  { "type": "click", "selector": "[data-tab='combat']" }
+  { "type": "click", "selector": "[data-tab='combat']" },
+  { "type": "click", "selector": "[data-act='combat-reaction']" }
 ]

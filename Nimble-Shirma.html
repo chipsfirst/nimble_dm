@@ -7961,7 +7961,7 @@ function combatRow(c, idx) {
         <div class="actions-pips" title="Действия в этом ходу">
           ${Array.from({ length: c.maxActions || 3 }, (_, i) => `<button class="apip ${i < (c.actions ?? 3) ? "on" : ""}" type="button" data-act="combat-action" data-id="${c.id}" data-i="${i}" aria-label="Действие ${i + 1}"></button>`).join("")}
         </div>
-        <button class="btn btn-sm ${c.reaction ? "btn-danger" : ""}" type="button" data-act="combat-reaction" data-id="${c.id}" title="Реакция (1/раунд)">Реакция</button>
+        <button class="btn btn-sm ${c.reaction ? "btn-danger" : ""}" type="button" data-act="combat-reaction" data-id="${c.id}" title="Реакция стоит 1 действие, 1 раз за раунд">${c.reaction ? "✓ Реакция" : "Реакция (−1 действие)"}</button>
       </div>
       <div class="hp-quick">
         <span class="small dim nowrap">Урон / лечение:</span>
@@ -8177,6 +8177,12 @@ reg("combat-reaction", (btn) => {
   const c = state.combat.combatants.find((x) => x.id === btn.dataset.id);
   if (!c) return;
   c.reaction = !c.reaction;
+  if (c.reaction) {
+    c.actions = Math.max(0, (c.actions ?? c.maxActions ?? 3) - 1);
+    toast(`${esc(c.name)}: реакция использована (−1 действие до конца раунда)`);
+  } else {
+    c.actions = Math.min(c.maxActions ?? 3, (c.actions ?? 0) + 1);
+  }
   save(); render();
 });
 reg("combat-damage", (btn) => {
