@@ -1,0 +1,108 @@
+[
+  {
+    "type": "click",
+    "selector": "[data-tab='chars']"
+  },
+  {
+    "type": "assert",
+    "selector": ".page-title",
+    "property": "text",
+    "equals": "Персонажи"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='new-char']"
+  },
+  {
+    "type": "fill",
+    "selector": "#wizName",
+    "value": "Тестовый Герой"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='wiz-next']"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='wiz-next']"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='wiz-finish']"
+  },
+  {
+    "type": "assert",
+    "selector": "#sheetName",
+    "property": "value",
+    "equals": "Тестовый Герой"
+  },
+  {
+    "type": "key",
+    "key": "Escape"
+  },
+  {
+    "type": "click",
+    "selector": "[data-tab='dice']"
+  },
+  {
+    "type": "assert",
+    "selector": ".page-title",
+    "property": "text",
+    "equals": "Кубики"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='dice-roll']"
+  },
+  {
+    "type": "click",
+    "selector": "[data-tab='ref']"
+  },
+  {
+    "type": "fill",
+    "selector": "#refSearch",
+    "value": "огонь"
+  },
+  {
+    "type": "click",
+    "selector": ".ref-row"
+  },
+  {
+    "type": "click",
+    "selector": "[data-tab='notes']"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='new-note']"
+  },
+  {
+    "type": "fill",
+    "selector": "#noteTitle",
+    "value": "Тестовая заметка"
+  },
+  {
+    "type": "click",
+    "selector": "[data-tab='combat']"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='combat-roll-all']"
+  },
+  {
+    "type": "click",
+    "selector": "[data-tab='reminders']"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='rem-new']"
+  },
+  {
+    "type": "fill",
+    "selector": "#remText",
+    "value": "Проверить яд"
+  },
+  {
+    "type": "click",
+    "selector": "[data-act='rem-save']"
+  }
+]
