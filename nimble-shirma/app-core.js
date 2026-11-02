@@ -401,7 +401,7 @@ function reminderLabel(r) {
 let REF_INDEX = null;
 const TYPE_LABEL = {
   rule: "Правило", condition: "Состояние", weapon: "Оружие", armor: "Броня", gear: "Снаряжение",
-  magic: "Магия", monster: "Существо", spell: "Заклинание", class: "Класс", ancestry: "Предок", background: "Предыстория", custom: "Своё"
+  magic: "Магические предметы", monster: "Существо", spell: "Заклинание", class: "Класс", ancestry: "Предок", background: "Предыстория", custom: "Своё"
 };
 function refIndex() {
   if (REF_INDEX) return REF_INDEX;

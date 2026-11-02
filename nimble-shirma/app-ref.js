@@ -9,7 +9,7 @@ function refCounts() {
 
 const REF_TYPES = [
   ["all", "Всё"], ["rule", "Правила"], ["condition", "Состояния"], ["weapon", "Оружие"],
-  ["armor", "Броня"], ["gear", "Снаряжение"], ["magic", "Магия"], ["monster", "Существа"],
+  ["armor", "Броня"], ["gear", "Снаряжение"], ["magic", "Магические предметы"], ["monster", "Существа"],
   ["spell", "Заклинания"], ["class", "Классы"], ["ancestry", "Предки"], ["background", "Предыстории"], ["custom", "Своё"]
 ];
 
@@ -24,7 +24,7 @@ function refView() {
   const entry = sel ? entryHTML(sel) : `<div class="card"><div class="empty"><p>Ничего не найдено. Попробуйте другое слово или добавьте свою запись.</p></div></div>`;
   return `<div class="page-head">
     <div><p class="eyebrow">Справочник</p><h1 class="page-title">Всё за столом</h1>
-      <p class="page-sub">${refIndex().length} записей: правила, состояния, оружие, магия, бестиарий и заклинания. Поиск ищет и по тексту.</p></div>
+      <p class="page-sub">${refIndex().length} записей: правила, состояния, оружие, магические предметы, бестиарий и заклинания. Поиск ищет и по тексту.</p></div>
     <div class="head-actions"><button class="btn" type="button" data-act="custom-new"><svg class="ico"><use href="#i-plus"/></svg>Своя запись</button></div>
   </div>
   <div class="searchbar" style="margin-bottom:12px">
@@ -158,7 +158,7 @@ function entryHTML(e) {
   } else if (e.type === "gear") {
     body = `<div class="statline">${tag(r.cost)}</div><p>${esc(r.desc)}</p>`;
   } else if (e.type === "magic") {
-    body = `<div class="statline">${tag(r.rarity || "магия", "violet")}</div><p>${esc(r.desc).replace(/\n/g, "<br>")}</p>`;
+    body = `<div class="statline">${tag(r.rarity || "магический предмет", "violet")}</div><p>${esc(r.desc).replace(/\n/g, "<br>")}</p>`;
   } else if (e.type === "monster") {
     body = monsterBodyHTML(r);
   } else if (e.type === "spell") {

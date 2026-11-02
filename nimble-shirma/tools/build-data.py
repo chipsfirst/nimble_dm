@@ -511,8 +511,17 @@ def parse_magic():
                 continue
             text = read(os.path.join(dp, f))
             lines = [l.strip() for l in text.split("\n") if l.strip()]
-            rarity = strip_md(lines[0]) if lines else ""
-            desc = strip_md("\n".join(lines[1:]))
+            rarity, desc = "", ""
+            if lines:
+                first = lines[0]
+                is_rarity = first.startswith("(") or (
+                    len(first) < 40 and re.search(r"(палочка|редк|необычн|легендарн|эпическ|обычная|очень редкая)", first, re.I)
+                )
+                if is_rarity:
+                    rarity = strip_md(first)
+                    desc = strip_md("\n".join(lines[1:]))
+                else:
+                    desc = strip_md("\n".join(lines))
             out.append({"name": f[:-3], "rarity": rarity, "desc": desc})
     out.sort(key=lambda x: x["name"])
     return out

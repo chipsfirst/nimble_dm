@@ -1,0 +1,7 @@
+[
+  { "type": "click", "selector": "[data-tab='ref']" },
+  { "type": "click", "selector": "[data-act='ref-type'][data-type='magic']" },
+  { "type": "fill", "selector": "#refSearch", "value": "Гримуар" },
+  { "type": "click", "selector": ".ref-row" },
+  { "type": "assert", "selector": ".entry", "property": "text", "equals": "" }
+]
