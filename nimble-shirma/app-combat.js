@@ -96,10 +96,13 @@ function combatRow(c, idx) {
         <button class="btn btn-sm ${c.reaction ? "btn-danger" : ""}" type="button" data-act="combat-reaction" data-id="${c.id}" title="Реакция (1/раунд)">Реакция</button>
       </div>
       <div class="hp-quick">
-        <input type="number" id="dmg-${c.id}" placeholder="урон" min="0" aria-label="Урон">
-        <label class="check small" title="Реакция «Защита»: снизить урон на броню"><input type="checkbox" id="def-${c.id}">Защита</label>
-        <button class="btn btn-sm" type="button" data-act="combat-damage" data-id="${c.id}">−</button>
-        <button class="btn btn-sm" type="button" data-act="combat-heal" data-id="${c.id}">+</button>
+        <span class="small dim nowrap">Урон / лечение:</span>
+        <input type="number" id="dmg-${c.id}" placeholder="число" min="0" aria-label="Урон или лечение">
+        <div class="hp-btns">
+          <button class="btn btn-sm btn-danger" type="button" data-act="combat-damage" data-id="${c.id}" title="Вычесть введённое число из хитов">− Урон</button>
+          ${c.armorValue ? `<label class="check small" title="Реакция «Защита»: вычесть броню из урона этой атаки"><input type="checkbox" id="def-${c.id}">Защита (−${c.armorValue})</label>` : ""}
+          <button class="btn btn-sm btn-green" type="button" data-act="combat-heal" data-id="${c.id}" title="Прибавить введённое число к хитам">+ Лечение</button>
+        </div>
       </div>
       <div class="row" style="gap:2px;justify-content:flex-end;margin-top:2px">
         ${c.isHero ? `<button class="btn btn-sm" type="button" data-act="combat-wound" data-id="${c.id}">＋рана</button>` : ""}
@@ -163,7 +166,7 @@ function combatView() {
       ${c.combatants.length ? c.combatants.map(combatRow).join("") : `<div class="empty" style="padding:26px"><p>В бою пока никого.</p><button class="btn btn-sm" type="button" data-act="combat-add">Добавить участника</button></div>`}
     </div>
     <div class="card-body" style="border-top:1px solid var(--line)">
-      <p class="hint mb-0">Порядок: клик по числу инициативы — изменить. Криты игнорируют броню, поэтому при крите не отмечайте «Защиту».</p>
+      <p class="hint mb-0">Урон: впишите число в поле рядом с участником и нажмите «− Урон» (или Enter). «+ Лечение» — восстановить хиты. Если атака критическая, броню не вычитают, поэтому «Защита» не отмечается. Клик по числу инициативы меняет порядок хода.</p>
     </div>
   </section>`}`;
 }
@@ -192,6 +195,14 @@ onBind("combat", () => {
     c.conditions = c.conditions || [];
     if (!c.conditions.includes(sel.value)) c.conditions.push(sel.value);
     save(); render();
+  }));
+  $$(".hp-quick input").forEach((inp) => inp.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" && inp.value !== "") {
+      ev.preventDefault();
+      const id = inp.id.replace("dmg-", "");
+      const c = state.combat.combatants.find((x) => x.id === id);
+      if (c) ACTIONS["combat-damage"] && ACTIONS["combat-damage"]($("[data-act='combat-damage'][data-id='" + id + "']") || { dataset: { id } });
+    }
   }));
 });
 

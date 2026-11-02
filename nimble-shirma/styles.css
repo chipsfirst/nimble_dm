@@ -447,8 +447,12 @@ button.stat:hover { border-color: rgba(224, 164, 95, .45); background: var(--amb
 .cond-chip:hover { background: rgba(217, 106, 95, .25); }
 .cond-chip::after { content: "×"; opacity: .6; }
 .cside { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.hp-quick { display: flex; align-items: center; gap: 4px; }
-.hp-quick input { width: 58px; min-height: 30px; text-align: center; font-family: var(--mono); }
+.hp-quick { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.hp-quick > span { font-size: 11px; white-space: nowrap; }
+.hp-quick input { width: 64px; min-height: 30px; text-align: center; font-family: var(--mono); }
+.hp-quick .hp-btns { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.btn-green { background: rgba(147, 177, 115, .12); border-color: rgba(147, 177, 115, .35); color: #c9e0ac; }
+.btn-green:hover { background: rgba(147, 177, 115, .22); color: #e0f0c6; }
 .actions-pips { display: flex; gap: 3px; }
 .apip { width: 16px; height: 8px; border-radius: 3px; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); }
 .apip.on { background: var(--amber); border-color: #b8813f; }
