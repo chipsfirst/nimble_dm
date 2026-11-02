@@ -67,6 +67,76 @@ reg("ref-entry", (btn) => {
   if (e) openDrawer(`<div class="entry">${entryHTML(e)}</div>`);
 });
 
+
+/* Рендер монстра и оружия (общие для библиотеки и своих записей) */
+function monsterBodyHTML(r) {
+  const tag = (t, c = "") => `<span class="tag ${c}">${esc(t)}</span>`;
+  const armorTxt = r.armor === "medium" ? "Средняя" : r.armor === "heavy" ? "Тяжёлая" : "Нет";
+  return `<div class="statline">${tag("Уровень " + (r.lvl || "—"), "amber")}${r.hp ? tag(r.hp + " хитов", "green") : tag("Миньон", "red")}${tag(r.size || "")}${tag("Броня: " + armorTxt, "blue")}${tag("Скорость " + (r.speed || 6) + (r.mode ? " (" + r.mode + ")" : ""))}${r.kind ? tag(r.kind) : ""}</div>
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn btn-sm btn-primary" type="button" data-act="ref-monster" data-name="${esc(r.name)}">В бой</button>
+      <button class="btn btn-sm" type="button" data-act="ref-card" data-type="monster" data-name="${esc(r.name)}">Карточка</button>
+      <button class="btn btn-sm" type="button" data-act="ref-monster-group" data-name="${esc(r.name)}" data-n="3">×3</button>
+      ${r.id ? `<button class="btn btn-sm" type="button" data-act="custom-edit" data-id="${esc(r.id)}">Изменить</button>` : ""}
+      ${r.id ? `<button class="btn btn-sm btn-danger" type="button" data-act="custom-delete" data-id="${esc(r.id)}">Удалить</button>` : ""}
+    </div>
+    <h3>Действия</h3>
+    ${(r.actions || []).length ? r.actions.map((a) => `<div class="action"><b>${esc(a.n)}.</b> <span class="d">${esc(a.d)}</span></div>`).join("") : `<p class="hint">Особых атак нет — действует по правилам миньонов.</p>`}
+    ${(r.special || []).length ? `<h3>Особенности</h3>${r.special.map((a) => `<div class="action"><b>${esc(a.n)}.</b> <span class="d">${esc(a.d)}</span></div>`).join("")}` : ""}
+    <p class="hint mt-12">${r.armor === "medium" ? "Средняя броня: игнорирует все модификаторы урона, считает только кости." : r.armor === "heavy" ? "Тяжёлая броня: берёт половину суммы костей урона (вверх)." : "Без брони: получает урон целиком."}</p>`;
+}
+function weaponBodyHTML(r) {
+  const tag = (t, c = "") => `<span class="tag ${c}">${esc(t)}</span>`;
+  const stat = r.stat ? "+" + esc(r.stat) : "";
+  return `<div class="statline">${r.cat ? tag(r.cat) : ""}${r.cost ? tag(r.cost) : ""}${tag(r.dice + (r.stat ? "+" + r.stat : "") + " " + (r.type || ""), "amber")}</div>
+    <dl class="kv"><dt>Урон</dt><dd>${esc(r.dice)}${stat} ${esc(r.type || "")}</dd>
+    ${r.cost ? `<dt>Стоимость</dt><dd>${esc(r.cost)}</dd>` : ""}
+    <dt>Свойства</dt><dd>${(r.props || []).map(esc).join(", ") || "—"}</dd></dl>
+    <div class="row mt-12"><button class="btn btn-sm" type="button" data-act="ref-roll" data-formula="${esc(r.dice)}" data-label="${esc(r.name)}">Бросок урона</button>
+    <button class="btn btn-sm" type="button" data-act="ref-attack" data-formula="${esc(r.dice + (r.stat ? "+" + r.stat : ""))}" data-label="${esc(r.name)}">Как атаку</button>${r.id ? `<button class="btn btn-sm" type="button" data-act="custom-edit" data-id="${esc(r.id)}">Изменить</button>` : ""}${r.id ? `<button class="btn btn-sm btn-danger" type="button" data-act="custom-delete" data-id="${esc(r.id)}">Удалить</button>` : ""}</div>
+    ${(r.props || []).length ? `<h3>Свойства оружия</h3>${r.props.map((p) => { const prop = DATA.weaponProps.find((x) => p.toLowerCase().startsWith(x.name.toLowerCase().slice(0, 4))); return `<p><b>${esc(p)}.</b> ${prop ? esc(prop.desc) : ""}</p>`; }).join("")}` : ""}`;
+}
+
+function monsterCardHTML(r) {
+  const armorTxt = r.armor === "medium" ? "Средняя" : r.armor === "heavy" ? "Тяжёлая" : "Нет";
+  return `<div class="print-sheet" id="cardPrint">
+    <div class="card-h">${esc(r.name)}</div>
+    <div class="card-sub">Существо · уровень ${esc(r.lvl || "—")} · ${esc(r.size || "")}</div>
+    <div class="card-stats">
+      <div><span>Хиты</span><b>${r.hp ? r.hp : "миньон"}</b></div>
+      <div><span>Броня</span><b>${armorTxt}</b></div>
+      <div><span>Скорость</span><b>${esc(r.speed || "6")}</b></div>
+      <div><span>Группа</span><b>${esc(r.kind || "—")}</b></div>
+    </div>
+    ${(r.actions || []).length ? `<div class="card-sec"><h4>Действия</h4>${r.actions.map((a) => `<p><b>${esc(a.n)}.</b> ${esc(a.d)}</p>`).join("")}</div>` : ""}
+    ${(r.special || []).length ? `<div class="card-sec"><h4>Особенности</h4>${r.special.map((a) => `<p><b>${esc(a.n)}.</b> ${esc(a.d)}</p>`).join("")}</div>` : ""}
+  </div>`;
+}
+function spellCardHTML(r) {
+  return `<div class="print-sheet" id="cardPrint">
+    <div class="card-h">${esc(r.name)}</div>
+    <div class="card-sub">Заклинание · ${esc(r.school)} · ${r.tier ? "тир " + r.tier : "заговор"}</div>
+    <div class="card-stats">
+      <div><span>Применение</span><b>${esc(r.cast || "—")}</b></div>
+      <div><span>Цель</span><b>${esc(r.target || "—")}</b></div>
+    </div>
+    <div class="card-sec"><p>${esc(r.text).replace(/\n/g, "<br>")}</p></div>
+  </div>`;
+}
+reg("ref-card", (btn) => {
+  const e = findRef(btn.dataset.type, btn.dataset.name);
+  if (!e) return;
+  const r = e.raw || {};
+  const card = e.type === "spell" ? spellCardHTML(r) : monsterCardHTML(r);
+  openModal({
+    title: "Карточка",
+    body: card + `<div class="row print-actions mt-16"><button class="btn btn-primary" type="button" data-act="card-print">Печатать</button>
+      <span class="small dim">Закройте окно печати, чтобы вернуться</span></div>`
+  });
+});
+reg("card-print", () => { try { window.print(); } catch (e) { toast("Печать недоступна", "warn"); } });
+/* --- */
+
 /* ---------------- Entry rendering ---------------- */
 function entryHTML(e) {
   const r = e.raw || {};
@@ -79,23 +149,7 @@ function entryHTML(e) {
   } else if (e.type === "condition") {
     body = `<p>${esc(r.desc || e.text).replace(/\n/g, "<br>")}</p>`;
   } else if (e.type === "weapon") {
-    body = `${tag(r.cat)}${tag(r.cost)}${tag(r.dice + "+" + r.stat + " " + r.type, "amber")}</div>
-      <dl class="kv"><dt>Урон</dt><dd>${esc(r.dice)}${r.stat ? "+" + esc(r.stat) : ""} ${esc(r.type)}</dd>
-      <dt>Стоимость</dt><dd>${esc(r.cost)}</dd>
-      <dt>Свойства</dt><dd>${(r.props || []).map(esc).join(", ") || "—"}</dd></dl>
-      <div class="row mt-12"><button class="btn btn-sm" type="button" data-act="ref-roll" data-formula="${esc(r.dice)}" data-label="${esc(r.name)}">Бросить d${esc(r.dice.replace(/^\d*d/, ""))}</button>
-      <button class="btn btn-sm" type="button" data-act="ref-attack" data-formula="${esc(r.dice + "+" + r.stat)}" data-label="${esc(r.name)}">Атака с ${STAT_SHORT[r.stat] || r.stat}</button></div>
-      ${r.props && r.props.length ? `<h3>Свойства</h3>${r.props.map((p) => {
-        const prop = DATA.weaponProps.find((x) => p.toLowerCase().includes(x.name.toLowerCase().slice(0, 4)));
-        return `<p><b>${esc(p)}.</b> ${prop ? esc(prop.desc) : ""}</p>`;
-      }).join("")}` : ""}`;
-    body = `<div class="statline">${tag(r.cat)}${tag(r.cost)}${tag(r.dice + "+" + r.stat + " " + r.type, "amber")}</div>
-      <dl class="kv"><dt>Урон</dt><dd>${esc(r.dice)}${r.stat ? "+" + esc(r.stat) : ""} ${esc(r.type)}</dd>
-      <dt>Стоимость</dt><dd>${esc(r.cost)}</dd>
-      <dt>Свойства</dt><dd>${(r.props || []).map(esc).join(", ") || "—"}</dd></dl>
-      <div class="row mt-12"><button class="btn btn-sm" type="button" data-act="ref-roll" data-formula="${esc(r.dice)}" data-label="${esc(r.name)}">Бросок урона</button>
-      <button class="btn btn-sm" type="button" data-act="ref-attack" data-formula="${esc(r.dice + (r.stat ? "+" + r.stat : ""))}" data-label="${esc(r.name)}">Как атаку</button></div>
-      ${(r.props || []).length ? `<h3>Свойства оружия</h3>${r.props.map((p) => { const prop = DATA.weaponProps.find((x) => p.toLowerCase().startsWith(x.name.toLowerCase().slice(0, 4))); return `<p><b>${esc(p)}.</b> ${prop ? esc(prop.desc) : ""}</p>`; }).join("")}` : ""}`;
+    body = weaponBodyHTML(r);
   } else if (e.type === "armor") {
     body = `<div class="statline">${tag(r.cat)}${tag("Броня " + r.armor, "blue")}${tag(r.cost)}</div>
       <dl class="kv"><dt>Броня</dt><dd>${esc(r.armor)}</dd><dt>Категория</dt><dd>${esc(r.cat)}</dd>
@@ -106,16 +160,7 @@ function entryHTML(e) {
   } else if (e.type === "magic") {
     body = `<div class="statline">${tag(r.rarity || "магия", "violet")}</div><p>${esc(r.desc).replace(/\n/g, "<br>")}</p>`;
   } else if (e.type === "monster") {
-    const armorTxt = r.armor === "medium" ? "Средняя" : r.armor === "heavy" ? "Тяжёлая" : "Нет";
-    body = `<div class="statline">${tag("Уровень " + r.lvl, "amber")}${r.hp ? tag(r.hp + " хитов", "green") : tag("Миньон", "red")}${tag(r.size)}${tag("Броня: " + armorTxt, "blue")}${tag("Скорость " + r.speed + " (" + r.mode + ")")}${tag(r.kind)}</div>
-      <div class="row" style="margin-bottom:10px">
-        <button class="btn btn-sm btn-primary" type="button" data-act="ref-monster" data-name="${esc(r.name)}">Добавить в бой</button>
-        <button class="btn btn-sm" type="button" data-act="ref-monster-group" data-name="${esc(r.name)}" data-n="3">×3 миньона</button>
-      </div>
-      <h3>Действия</h3>
-      ${(r.actions || []).length ? r.actions.map((a) => `<div class="action"><b>${esc(a.n)}.</b> <span class="d">${esc(a.d)}</span></div>`).join("") : `<p class="hint">Особых атак нет — действует по правилам миньонов.</p>`}
-      ${(r.special || []).length ? `<h3>Особенности</h3>${r.special.map((a) => `<div class="action"><b>${esc(a.n)}.</b> <span class="d">${esc(a.d)}</span></div>`).join("")}` : ""}
-      <p class="hint mt-12">${r.armor === "medium" ? "Средняя броня: игнорирует все модификаторы урона, считает только кости." : r.armor === "heavy" ? "Тяжёлая броня: берёт половину суммы костей урона (вверх)." : "Без брони: получает урон целиком."}</p>`;
+    body = monsterBodyHTML(r);
   } else if (e.type === "spell") {
     const dmg = (r.text.match(/(\d*d\d+|\d+)/i) || [])[0];
     body = `<div class="statline">${tag(r.school, "violet")}${tag(r.tier ? "Тир " + r.tier : "Кантрип", "amber")}${tag(r.cast)}${r.target ? tag(r.target) : ""}</div>
@@ -124,6 +169,7 @@ function entryHTML(e) {
         <button class="btn btn-sm" type="button" data-act="ref-roll" data-formula="d20" data-label="${esc(r.name)}">d20</button>
         ${/\d*d\d+/.test(r.text) ? `<button class="btn btn-sm" type="button" data-act="ref-roll" data-formula="${esc((r.text.match(/\d*d\d+(?:\+\d+)?/) || [""])[0] || "1d6")}" data-label="${esc(r.name)}">Бросок урона</button>` : ""}
         <button class="btn btn-sm" type="button" data-act="ref-copy" data-text="${esc(r.name + ". " + r.text)}">Копировать</button>
+        <button class="btn btn-sm" type="button" data-act="ref-card" data-type="spell" data-name="${esc(r.name)}">Карточка</button>
       </div>`;
   } else if (e.type === "class") {
     body = `<div class="statline">${tag(r.hp + " хитов", "green")}${tag("Кость " + r.hitDie)}${tag("KEY: " + r.key.map((k) => STAT_SHORT[k]).join("/"), "amber")}${tag(r.armor.join(", ") || "без брони")}</div>
@@ -136,10 +182,16 @@ function entryHTML(e) {
   } else if (e.type === "background") {
     body = `<div class="statline">${tag("Предыстория", "violet")}</div><p>${esc(r.text).replace(/\n/g, "<br>")}</p>`;
   } else if (e.type === "custom") {
-    body = `<div class="statline">${tag("Своя запись", "violet")}${r.sub ? tag(r.sub) : ""}</div>
+    if (r.kind === "monster") {
+      body = monsterBodyHTML(r);
+    } else if (r.kind === "weapon") {
+      body = weaponBodyHTML(r);
+    } else {
+      body = `<div class="statline">${tag("Своя запись", "violet")}${r.sub ? tag(r.sub) : ""}</div>
       <p>${esc(r.text || "").replace(/\n/g, "<br>")}</p>
       <div class="row mt-12"><button class="btn btn-sm" type="button" data-act="custom-edit" data-id="${esc(r.id)}">Изменить</button>
       <button class="btn btn-sm btn-danger" type="button" data-act="custom-delete" data-id="${esc(r.id)}">Удалить</button></div>`;
+    }
   }
   return head + "</div>" + body;
 }
@@ -166,31 +218,90 @@ reg("custom-new", () => customEditor(null));
 reg("custom-edit", (btn) => customEditor(btn.dataset.id));
 function customEditor(id) {
   const item = id ? state.custom.find((c) => c.id === id) : null;
+  const kind = item?.kind || "text";
+  const act = (k) => `<button class="chip ${kind === k ? "is-active" : ""}" type="button" data-act="custom-kind" data-kind="${k}">${k === "text" ? "Текст" : k === "monster" ? "Существо" : "Оружие"}</button>`;
   openModal({
     title: item ? "Изменить запись" : "Своя запись",
     body: `<div class="stack">
-      <div class="field"><label for="cuName">Название</label><input id="cuName" type="text" value="${esc(item?.name || "")}" placeholder="Например, «Долг крови»"></div>
-      <div class="field"><label for="cuSub">Подзаголовок</label><input id="cuSub" type="text" value="${esc(item?.sub || "")}" placeholder="Правило, NPC, место, предмет…"></div>
-      <div class="field"><label for="cuText">Текст</label><textarea id="cuText" rows="7" placeholder="Что нужно помнить за столом">${esc(item?.text || "")}</textarea></div>
+      <div class="field"><label for="cuName">Название</label><input id="cuName" type="text" value="${esc(item?.name || "")}" placeholder="Например, «Долг крови», «Гоблин-вожак», «Кинжал возмездия»"></div>
+      <div class="field"><span class="field-label">Тип записи</span><div class="chips">${act("text")}${act("monster")}${act("weapon")}</div></div>
+      <div class="field" data-cufield="sub" style="${kind === "text" ? "" : "display:none"}"><label for="cuSub">Подзаголовок</label><input id="cuSub" type="text" value="${esc(item?.sub || "")}" placeholder="Правило, NPC, место, предмет…"></div>
+      <div class="field" data-cufield="text" style="${kind === "text" || kind === "monster" ? "" : "display:none"}"><label for="cuText">${kind === "monster" ? "Описание и действия" : "Текст"}</label><textarea id="cuText" rows="6" placeholder="${kind === "monster" ? "Каждое действие с новой строки: Название: описание (урон по правилам Nimble, например 1к6+2)" : "Что нужно помнить за столом"}">${esc(item?.text || "")}</textarea></div>
+
+      <div data-cufield="monster-fields" style="${kind === "monster" ? "" : "display:none"}">
+        <div class="field-row">
+          <div class="field"><label for="cuLvl">Уровень</label><input id="cuLvl" type="text" value="${esc(item?.lvl || "1")}" placeholder="1, 1/3, 4…"></div>
+          <div class="field"><label for="cuHp">Хиты</label><input id="cuHp" type="number" min="1" value="${item?.hp || 10}"></div>
+          <div class="field"><label for="cuSpeed">Скорость</label><input id="cuSpeed" type="number" min="0" value="${item?.speed || 6}"></div>
+          <div class="field"><label for="cuSize">Размер</label><select id="cuSize">${["Крошечный","Маленький","Средний","Большой","Огромный","Исполинский"].map((x) => `<option${(item?.size || "Средний") === x ? " selected" : ""}>${x}</option>`).join("")}</select></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="cuArmor">Броня</label><select id="cuArmor"><option value="none"${(item?.armor || "none") === "none" ? " selected" : ""}>Нет</option><option value="medium"${item?.armor === "medium" ? " selected" : ""}>Средняя</option><option value="heavy"${item?.armor === "heavy" ? " selected" : ""}>Тяжёлая</option></select></div>
+          <div class="field"><label for="cuKind">Группа</label><input id="cuKind" type="text" value="${esc(item?.kind || "")}" placeholder="Гоблины, Легендарные…"></div>
+        </div>
+      </div>
+
+      <div data-cufield="weapon-fields" style="${kind === "weapon" ? "" : "display:none"}">
+        <div class="field-row">
+          <div class="field"><label for="cuDice">Кость урона</label><input id="cuDice" type="text" value="${esc(item?.dice || "1d6")}" placeholder="1d6, 2d8, 1d10…"></div>
+          <div class="field"><label for="cuStat">Характеристика</label><select id="cuStat"><option value="">—</option><option value="STR"${item?.stat === "STR" ? " selected" : ""}>СИЛ</option><option value="DEX"${item?.stat === "DEX" ? " selected" : ""}>ЛВК</option></select></div>
+          <div class="field"><label for="cuWtype">Тип урона</label><input id="cuWtype" type="text" value="${esc(item?.wtype || "Колющий")}" placeholder="Колющий, Рубящий…"></div>
+          <div class="field"><label for="cuCost">Цена</label><input id="cuCost" type="text" value="${esc(item?.cost || "")}" placeholder="10 зм"></div>
+        </div>
+        <div class="field"><label for="cuProps">Свойства</label><input id="cuProps" type="text" value="${esc((item?.props || []).join(", "))}" placeholder="Лёгкое, Метательное 4"></div>
+      </div>
     </div>`,
-    footer: `<button class="btn" type="button" data-close-modal>Отмена</button><span class="spacer"></span><button class="btn btn-primary" type="button" data-act="custom-save" data-id="${item ? item.id : ""}">Сохранить</button>`
+    footer: `<button class="btn" type="button" data-close-modal>Отмена</button><span class="spacer"></span><button class="btn btn-primary" type="button" data-act="custom-save" data-id="${item ? item.id : ""}" data-kind="${kind}">Сохранить</button>`
   });
 }
+let customKind = "text";
+reg("custom-kind", (btn) => {
+  customKind = btn.dataset.kind;
+  $$("[data-act='custom-kind']").forEach((b) => b.classList.toggle("is-active", b.dataset.kind === customKind));
+  $$("[data-cufield]").forEach((el) => {
+    const show = customKind === "monster" ? el.dataset.cufield === "monster-fields" || el.dataset.cufield === "text"
+      : customKind === "weapon" ? el.dataset.cufield === "weapon-fields"
+      : el.dataset.cufield === "sub" || el.dataset.cufield === "text";
+    el.style.display = show ? "" : "none";
+  });
+  const lbl = $("[data-cufield='text'] label");
+  if (lbl) lbl.textContent = customKind === "monster" ? "Описание и действия" : "Текст";
+  const text = $("#cuText");
+  if (text) text.placeholder = customKind === "monster" ? "Каждое действие с новой строки: Название: описание (например, 1к6+2)" : "Что нужно помнить за столом";
+  const saveBtn = $("[data-act='custom-save']");
+  if (saveBtn) saveBtn.dataset.kind = customKind;
+});
 reg("custom-save", (btn) => {
   const name = $("#cuName")?.value.trim();
+  const kind = btn.dataset.kind || "text";
+  if (!name) { toast("Нужно название", "warn"); return; }
   const sub = $("#cuSub")?.value.trim();
   const text = $("#cuText")?.value.trim();
-  if (!name) { toast("Нужно название", "warn"); return; }
   const id = btn.dataset.id;
+  const rec = { name, kind, sub, text };
+  if (kind === "monster") {
+    rec.lvl = $("#cuLvl")?.value.trim() || "1";
+    rec.hp = Math.max(1, Number($("#cuHp")?.value) || 1);
+    rec.speed = Math.max(0, Number($("#cuSpeed")?.value) || 6);
+    rec.size = $("#cuSize")?.value || "Средний";
+    rec.armor = $("#cuArmor")?.value || "none";
+    rec.group = $("#cuKind")?.value.trim() || "";
+  } else if (kind === "weapon") {
+    rec.dice = $("#cuDice")?.value.trim() || "1d6";
+    rec.stat = $("#cuStat")?.value || "";
+    rec.wtype = $("#cuWtype")?.value.trim() || "";
+    rec.cost = $("#cuCost")?.value.trim() || "";
+    rec.props = ($("#cuProps")?.value || "").split(",").map((x) => x.trim()).filter(Boolean);
+  }
   if (id) {
     const item = state.custom.find((c) => c.id === id);
-    if (item) { item.name = name; item.sub = sub; item.text = text; }
+    if (item) Object.keys(rec).forEach((k) => { item[k] = rec[k]; });
   } else {
-    state.custom.push({ id: uid(), name, sub, text });
+    state.custom.push({ id: uid(), ...rec });
   }
   rebuildRefIndex(); save(); closeModal();
-  state.ui.refType = "custom";
-  state.ui.refSel = "custom:" + name;
+  state.ui.refType = kind === "monster" ? "monster" : kind === "weapon" ? "weapon" : "custom";
+  state.ui.refSel = (kind === "monster" ? "monster:" : kind === "weapon" ? "weapon:" : "custom:") + name;
   render();
   toast("Запись сохранена");
 });

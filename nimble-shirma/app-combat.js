@@ -1,4 +1,24 @@
 /* ================= Трекер боя ================= */
+
+function parseCustomMonster(rec) {
+  const actions = (rec.text || "").split(/\n+/).map((l) => l.trim()).filter(Boolean).map((l) => {
+    const m = l.match(/^(.+?):(.*)$/);
+    return m ? { n: m[1].trim().rstrip("."), d: m[2].trim() } : { n: "Действие", d: l };
+  });
+  return {
+    id: rec.id, name: rec.name, lvl: rec.lvl || "1", hp: rec.hp || 1,
+    armor: rec.armor || "none", speed: rec.speed || 6, mode: "ходьба",
+    size: rec.size || "Средний", minion: false, kind: rec.group || "Свои существа",
+    actions, special: []
+  };
+}
+function findMonsterAny(name) {
+  const lib = DATA.monsters.find((m) => m.name === name);
+  if (lib) return lib;
+  const custom = (state.custom || []).find((c) => c.kind === "monster" && c.name === name);
+  return custom ? parseCustomMonster(custom) : null;
+}
+
 function addCharToCombat(ch, init) {
   if (state.combat.combatants.some((c) => c.charId === ch.id)) {
     toast("Этот герой уже в бою", "warn");
@@ -335,13 +355,13 @@ reg("combat-cond-remove", (btn) => {
   save(); render();
 });
 reg("ref-monster", (btn) => {
-  const m = DATA.monsters.find((x) => x.name === btn.dataset.name);
+  const m = findMonsterAny(btn.dataset.name);
   if (!m) return;
   addMonsterToCombat(m, 1);
   toast("В бою: " + esc(m.name));
 });
 reg("ref-monster-group", (btn) => {
-  const m = DATA.monsters.find((x) => x.name === btn.dataset.name);
+  const m = findMonsterAny(btn.dataset.name);
   if (!m) return;
   addMonsterToCombat(m, Number(btn.dataset.n) || 3);
   toast(`В бою: ${esc(m.name)} ×${btn.dataset.n}`);

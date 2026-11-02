@@ -349,7 +349,9 @@ function suggestedHp(clsName, level) {
 
 function charSummary(ch) {
   const cls = classByName(ch.class);
-  return [ch.ancestry, ch.class, ch.level ? "ур. " + ch.level : "", cls?.hitDie].filter(Boolean).join(" · ");
+  const parts = [ch.ancestry, ch.class, ch.level ? "ур. " + ch.level : "", cls?.hitDie];
+  if (ch.background) parts.splice(1, 0, ch.background);
+  return parts.filter(Boolean).join(" · ");
 }
 
 function skillTotal(ch, skill) {
@@ -415,7 +417,16 @@ function refIndex() {
   DATA.classes.forEach((c) => idx.push({ type: "class", name: c.name, sub: "Хиты " + c.hp + " · " + c.hitDie, text: c.role, raw: c }));
   DATA.ancestries.forEach((a) => idx.push({ type: "ancestry", name: a.name, sub: a.size, text: a.trait, raw: a }));
   (DATA.backgrounds || []).forEach((b) => idx.push({ type: "background", name: b.name, sub: "Предыстория", text: b.text, raw: b }));
-  state.custom.forEach((c) => idx.push({ type: "custom", id: c.id, name: c.name, sub: c.sub || "своя запись", text: c.text || "", raw: c }));
+  state.custom.forEach((c) => {
+    if (c.kind === "monster") {
+      const raw = typeof parseCustomMonster === "function" ? parseCustomMonster(c) : c;
+      idx.push({ type: "monster", name: c.name, sub: "своё · ур. " + (c.lvl || "1") + (c.hp ? " · " + c.hp + " хит" : ""), text: c.text || "", raw });
+    } else if (c.kind === "weapon") {
+      idx.push({ type: "weapon", name: c.name, sub: "своё · " + (c.dice || "1d6"), text: ((c.props || []).join(", ")), raw: { id: c.id, name: c.name, dice: c.dice || "1d6", stat: c.stat || "", type: c.wtype || "", cost: c.cost || "", props: c.props || [], cat: "Своё оружие" } });
+    } else {
+      idx.push({ type: "custom", id: c.id, name: c.name, sub: c.sub || "своя запись", text: c.text || "", raw: c });
+    }
+  });
   REF_INDEX = idx;
   return idx;
 }

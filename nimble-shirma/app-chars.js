@@ -51,7 +51,7 @@ let wiz = null;
 
 function newWizard() {
   return {
-    step: 1, name: "", ancestry: "Человек", cls: "Охотник", level: 1,
+    step: 1, name: "", ancestry: "Человек", background: "", cls: "Охотник", level: 1,
     attrs: { STR: 2, DEX: 1, INT: 0, WIL: -2 },
     array: "balanced", skills: {}, armorKey: "", weapons: [], mana: 0, notes: ""
   };
@@ -89,6 +89,10 @@ function drawWizard() {
       <div class="field"><label for="wizAncestry">Предок</label>
         <select id="wizAncestry">${DATA.ancestries.map((a) => `<option value="${esc(a.name)}"${a.name === wiz.ancestry ? " selected" : ""}>${esc(a.name)} · ${esc(a.size)}</option>`).join("")}</select>
         <p class="hint">${esc((DATA.ancestries.find((a) => a.name === wiz.ancestry) || {}).trait || "")}</p>
+      </div>
+      <div class="field"><label for="wizBackground">Предыстория</label>
+        <select id="wizBackground"><option value="">Без предыстории</option>${(DATA.backgrounds || []).map((b) => `<option value="${esc(b.name)}"${b.name === wiz.background ? " selected" : ""}>${esc(b.name)}</option>`).join("")}</select>
+        <p class="hint">${esc(wiz.background ? ((DATA.backgrounds || []).find((b) => b.name === wiz.background) || {}).text || "" : "Что герой оставил позади — и почему он в пути.")}</p>
       </div>
       <div class="field"><span class="field-label">Класс</span>
         <div class="pick-grid">${DATA.classes.map((c) => `<button type="button" class="pick ${c.name === wiz.cls ? "is-active" : ""}" data-act="wiz-class" data-name="${esc(c.name)}">
@@ -147,7 +151,7 @@ function drawWizard() {
       <div class="roll-result" style="margin-top:0">
         <div class="kv" style="display:grid;grid-template-columns:120px 1fr;gap:4px 12px;font-size:13px">
           <span class="dim">Имя</span><span>${esc(wiz.name || "—")}</span>
-          <span class="dim">Кто</span><span>${esc(wiz.ancestry)} · ${esc(wiz.cls)} · ур. ${wiz.level}</span>
+          <span class="dim">Кто</span><span>${esc(wiz.ancestry)} · ${esc(wiz.cls)} · ур. ${wiz.level}${wiz.background ? " · " + esc(wiz.background) : ""}</span>
           <span class="dim">Атрибуты</span><span class="mono">${STAT_IDS.map((k) => STAT_SHORT[k] + " " + (wiz.attrs[k] >= 0 ? "+" : "") + wiz.attrs[k]).join(" · ")}</span>
           <span class="dim">Хиты / броня</span><span>${hp} хитов · ${armorLabelByKey(wiz.armorKey) || "без брони"}</span>
           <span class="dim">Навыки</span><span>${Object.entries(wiz.skills).filter(([, v]) => v).map(([k, v]) => k + " +" + v).join(", ") || "—"}</span>
@@ -241,6 +245,7 @@ function collectWizard() {
   const name = $("#wizName"); if (name) wiz.name = name.value.trim();
   const lvl = $("#wizLevel"); if (lvl) wiz.level = clamp(Number(lvl.value) || 1, 1, 20);
   const anc = $("#wizAncestry"); if (anc) wiz.ancestry = anc.value;
+  const bg = $("#wizBackground"); if (bg) wiz.background = bg.value;
   const hp = $("#wizHp"); if (hp) wiz.hp = Math.max(1, Number(hp.value) || 1);
   const mana = $("#wizMana"); if (mana) wiz.mana = Math.max(0, Number(mana.value) || 0);
   const armor = $("#wizArmor"); if (armor) wiz.armorKey = armor.value;
@@ -252,7 +257,7 @@ reg("wiz-finish", () => {
   const armor = wiz.armorKey && wiz.armorKey !== "custom" ? DATA.armor.find((a) => a.name === wiz.armorKey) : null;
   const ch = {
     id: uid(), name: wiz.name.trim() || "Безымянный герой",
-    ancestry: wiz.ancestry, class: wiz.cls, level: clamp(Number(wiz.level) || 1, 1, 20),
+    ancestry: wiz.ancestry, background: wiz.background || "", class: wiz.cls, level: clamp(Number(wiz.level) || 1, 1, 20),
     str: Number(wiz.attrs.STR) || 0, dex: Number(wiz.attrs.DEX) || 0, int: Number(wiz.attrs.INT) || 0, wil: Number(wiz.attrs.WIL) || 0,
     skills: { ...wiz.skills },
     hp: Number(wiz.hp) || suggestedHp(wiz.cls, wiz.level),
@@ -300,6 +305,9 @@ function sheetHTML(ch) {
       <div class="field grow"><label for="sheetName">Имя</label><input id="sheetName" type="text" value="${esc(ch.name)}" data-char="name"></div>
       <div class="field" style="flex:0 1 90px"><label for="sheetLevel">Уровень</label><input id="sheetLevel" type="number" min="1" max="20" value="${ch.level || 1}" data-char="level"></div>
       <div class="field" style="flex:0 1 130px"><label for="sheetClass">Класс</label><select id="sheetClass" data-char="class">${DATA.classes.map((c) => `<option${c.name === ch.class ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>
+      <div class="field" style="flex:1 1 150px"><label for="sheetBackground">Предыстория</label>
+        <select id="sheetBackground" data-char="background"><option value="">Без предыстории</option>${(DATA.backgrounds || []).map((b) => `<option${b.name === ch.background ? " selected" : ""}>${esc(b.name)}</option>`).join("")}</select>
+      </div>
     </div>
     <div class="sheet-grid">
       <div>
