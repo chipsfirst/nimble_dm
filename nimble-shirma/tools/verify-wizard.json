@@ -1,0 +1,10 @@
+[
+  { "type": "click", "selector": "[data-tab='chars']" },
+  { "type": "click", "selector": "[data-act='new-char']" },
+  { "type": "fill", "selector": "#wizName", "value": "Тесовик" },
+  { "type": "fill", "selector": "#wizAncestry", "value": "Крол" },
+  { "type": "fill", "selector": "#wizBackground", "value": "(Тайно) нежить" },
+  { "type": "click", "selector": "[data-act='wiz-next']" },
+  { "type": "click", "selector": "[data-act='wiz-next']" },
+  { "type": "click", "selector": "[data-act='wiz-finish']" }
+]

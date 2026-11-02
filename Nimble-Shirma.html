@@ -7200,8 +7200,9 @@ function sheetHTML(ch) {
     <div class="field-row" style="align-items:flex-end">
       <div class="field grow"><label for="sheetName">Имя</label><input id="sheetName" type="text" value="${esc(ch.name)}" data-char="name"></div>
       <div class="field" style="flex:0 1 90px"><label for="sheetLevel">Уровень</label><input id="sheetLevel" type="number" min="1" max="20" value="${ch.level || 1}" data-char="level"></div>
+      <div class="field" style="flex:1 1 130px"><label for="sheetAncestry">Предок</label><select id="sheetAncestry" data-char="ancestry">${DATA.ancestries.map((a) => `<option${a.name === ch.ancestry ? " selected" : ""}>${esc(a.name)}</option>`).join("")}</select></div>
       <div class="field" style="flex:0 1 130px"><label for="sheetClass">Класс</label><select id="sheetClass" data-char="class">${DATA.classes.map((c) => `<option${c.name === ch.class ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>
-      <div class="field" style="flex:1 1 150px"><label for="sheetBackground">Предыстория</label>
+      <div class="field" style="flex:0 1 150px"><label for="sheetBackground">Предыстория</label>
         <select id="sheetBackground" data-char="background"><option value="">Без предыстории</option>${(DATA.backgrounds || []).map((b) => `<option${b.name === ch.background ? " selected" : ""}>${esc(b.name)}</option>`).join("")}</select>
       </div>
     </div>
@@ -7282,7 +7283,7 @@ function sheetHTML(ch) {
 
         <div class="sheet-block">
           <div class="sheet-h">Заметки <span class="line"></span></div>
-          <textarea id="sheetNotes" rows="4" data-char="notes" placeholder="Мотивы, долги, секреты…">${esc(ch.notes || "")}</textarea>
+          <textarea id="sheetNotes" rows="4" data-char="notes" aria-label="Заметки о персонаже" placeholder="Мотивы, долги, секреты…">${esc(ch.notes || "")}</textarea>
         </div>
 
         <div id="sheetRollResult" class="roll-result" hidden></div>
